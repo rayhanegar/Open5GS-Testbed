@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: upf-config
+  namespace: open5gs
+data:
+  upf.yaml: |
+    logger:
+      level: info
+      file: 
+        path: /var/log/open5gs/upf.log
+        timestamp: true
+      default:
+        timestamp: true
+    
+    global:
+      max:
+        ue: 1024  # The number of UE can be increased depending on memory size.
+    #    peer: 64
+
+    upf:
+      pfcp:
+        server:
+          - address: 10.10.0.7
+            port: 8805
+        client:
+          smf:
+            - address: 10.10.0.4
+
+      gtpu:
+        server:
+          - address: 10.10.0.7
+            port: 2152
+      
+      session:
+      - subnet: 10.45.0.0/24
+        sst: 1
+        gateway: 10.45.0.1
+        dnn: embb.testbed
+        dev: ogstun
+      - subnet: 10.45.1.0/24
+        sst: 2
+        gateway: 10.45.1.1
+        dnn: urllc.v2x
+        dev: ogstun2
+      - subnet: 10.45.2.0/24
+        sst: 3
+        gateway: 10.45.2.1
+        dnn: mmtc.testbed
+        dev: ogstun3
+      
+      metrics:
+        server:
+          - dev: eth0
+            port: 9090
+            advertise: upf.open5gs.svc.cluster.local:9090

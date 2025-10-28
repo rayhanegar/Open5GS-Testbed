@@ -1,0 +1,79 @@
+================================================================================
+Open5GS Deployment Summary
+================================================================================
+Timestamp: 2025-10-22 23:30:52
+Deployment ID: 20251022_232925
+
+================================================================================
+OVERALL TIMING
+================================================================================
+Total Deployment Time: 87817ms (87.81s)
+
+Phase Breakdown:
+  - Stop Services:     7ms
+  - Cleanup:           10935ms
+  - Foundation:        4328ms
+  - ConfigMaps:        5352ms
+  - Parallel Deploy:   61809ms
+  - Metrics Collection: 5371ms
+
+================================================================================
+PER-POD DEPLOYMENT TIME (ms)
+================================================================================
+nrf:                 20541 ms
+scp:                 20534 ms
+
+================================================================================
+NRF/SCP METRICS
+================================================================================
+NRF Registered NFs:   0
+SCP Registration Events: 8
+
+================================================================================
+DEPLOYED RESOURCES
+================================================================================
+NAME     READY   STATUS    RESTARTS   AGE   IP               NODE   NOMINATED NODE   READINESS GATES
+amf-0    1/1     Running   0          26s   192.168.50.200   cubi   <none>           <none>
+ausf-0   1/1     Running   0          26s   10.42.0.253      cubi   <none>           <none>
+nrf-0    1/1     Running   0          68s   10.42.0.250      cubi   <none>           <none>
+nssf-0   1/1     Running   0          26s   10.42.0.2        cubi   <none>           <none>
+pcf-0    1/1     Running   0          26s   10.42.0.254      cubi   <none>           <none>
+scp-0    1/1     Running   0          47s   10.42.0.251      cubi   <none>           <none>
+smf-0    1/1     Running   0          26s   10.42.0.252      cubi   <none>           <none>
+udm-0    1/1     Running   0          26s   10.42.0.4        cubi   <none>           <none>
+udr-0    1/1     Running   0          26s   10.42.0.3        cubi   <none>           <none>
+upf-0    1/1     Running   0          26s   192.168.50.200   cubi   <none>           <none>
+
+================================================================================
+SERVICES
+================================================================================
+NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+amf       ClusterIP   10.43.40.162    <none>        7777/TCP,38412/SCTP          26s
+ausf      ClusterIP   10.43.133.78    <none>        7777/TCP                     26s
+mongodb   ClusterIP   None            <none>        27017/TCP                    75s
+nrf       ClusterIP   10.43.197.51    <none>        7777/TCP                     68s
+nssf      ClusterIP   10.43.116.224   <none>        7777/TCP                     26s
+pcf       ClusterIP   10.43.73.153    <none>        7777/TCP                     26s
+scp       ClusterIP   10.43.184.189   <none>        7777/TCP                     47s
+smf       ClusterIP   10.43.169.245   <none>        7777/TCP,8805/UDP,9090/TCP   26s
+udm       ClusterIP   10.43.163.230   <none>        7777/TCP                     26s
+udr       ClusterIP   10.43.213.185   <none>        7777/TCP                     26s
+upf       ClusterIP   10.43.136.222   <none>        8805/UDP,2152/UDP,9090/TCP   26s
+
+================================================================================
+NF REGISTRATION DETAILS (from NRF logs)
+================================================================================
+[32m10/22 16:30:07.189[0m: [[33mnrf[0m] [1;32mINFO[0m: [5edf4864-af64-41f0-bcf2-c328f664e39e] NF registered [Heartbeat:10s] (../src/nrf/nf-sm.c:204)
+[32m10/22 16:30:28.346[0m: [[33mnrf[0m] [1;32mINFO[0m: [6b7a9e16-af64-41f0-81f5-ad1d5ee074bf] NF registered [Heartbeat:10s] (../src/nrf/nf-sm.c:204)
+[32m10/22 16:30:28.425[0m: [[33mnrf[0m] [1;32mINFO[0m: [6b70dbce-af64-41f0-8dfe-97839856e3fb] NF registered [Heartbeat:10s] (../src/nrf/nf-sm.c:204)
+[32m10/22 16:30:28.426[0m: [[33mnrf[0m] [1;32mINFO[0m: [6b714f3c-af64-41f0-b9ce-a39ded6740e3] NF registered [Heartbeat:10s] (../src/nrf/nf-sm.c:204)
+[32m10/22 16:30:28.436[0m: [[33mnrf[0m] [1;32mINFO[0m: [6b718a7e-af64-41f0-bc08-fb91efb573af] NF registered [Heartbeat:10s] (../src/nrf/nf-sm.c:204)
+[32m10/22 16:30:28.510[0m: [[33mnrf[0m] [1;32mINFO[0m: [6b6faf2e-af64-41f0-998c-fbfe237e5491] NF registered [Heartbeat:10s] (../src/nrf/nf-sm.c:204)
+[32m10/22 16:30:28.765[0m: [[33mnrf[0m] [1;32mINFO[0m: [6b70aa32-af64-41f0-add5-5fe8af8115f5] NF registered [Heartbeat:10s] (../src/nrf/nf-sm.c:204)
+[32m10/22 16:30:28.766[0m: [[33mnrf[0m] [1;32mINFO[0m: [6b718614-af64-41f0-acba-d9915a321c97] NF registered [Heartbeat:10s] (../src/nrf/nf-sm.c:204)
+
+================================================================================
+DEPLOYMENT ENDPOINTS
+================================================================================
+AMF NGAP Endpoint: 192.168.50.200:38412
+Configure your gNB to connect to: 192.168.50.200:38412

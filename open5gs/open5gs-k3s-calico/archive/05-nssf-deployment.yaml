@@ -1,0 +1,52 @@
+# This manifest defines the Service and Deployment for the Open5GS NSSF.
+# - The Service provides the stable DNS name `open5gs-nssf-svc`.
+# - The Deployment ensures one replica of the `open5gs-nssf` container is running.
+# - It mounts the `open5gs-config` ConfigMap to load its `nssf.yaml` file.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: open5gs-nssf-svc
+  namespace: open5gs
+  labels:
+    app: open5gs-nssf
+spec:
+  ports:
+    - port: 7777
+      targetPort: 7777
+      name: sbi
+  selector:
+    app: open5gs-nssf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open5gs-nssf-deployment
+  namespace: open5gs
+  labels:
+    app: open5gs-nssf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open5gs-nssf
+  template:
+    metadata:
+      labels:
+        app: open5gs-nssf
+    spec:
+      containers:
+      - name: nssf
+        image: gradiantcharts/open5gs-nssf
+        ports:
+        - containerPort: 7777
+        command: ["open5gs-nssfd"]
+        args: ["-c", "/open5gs/config/nssf.yaml"]
+        volumeMounts:
+        - name: open5gs-config-volume
+          mountPath: /open5gs/config
+      volumes:
+      - name: open5gs-config-volume
+        configMap:
+          name: open5gs-config
+

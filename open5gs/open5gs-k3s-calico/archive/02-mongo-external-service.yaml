@@ -1,0 +1,51 @@
+# --- What is this file? ---
+# This manifest defines two related Kubernetes resources: a Service and an Endpoints object.
+#
+# --- Why is it needed? ---
+# This is the standard Kubernetes method for connecting internal applications (our Open5GS pods)
+# to an external service (your bare-metal MongoDB on a VM).
+#
+# --- How does it work? ---
+# 1. The 'Service' (kind: Service) creates a stable, internal DNS name within the cluster
+#    (e.g., "open5gs-mongo-svc.open5gs.svc.cluster.local").
+#    Notice it has no 'selector'. This means it does not look for pods to send traffic to.
+#
+# 2. The 'Endpoints' (kind: Endpoints) object manually provides the IP address for that service.
+#    We are explicitly telling Kubernetes: "When any pod tries to connect to the 'open5gs-mongo-svc'
+#    service, do not look for a pod. Instead, route the traffic directly to the IP address
+#    listed below."
+
+# --- Kubernetes Service (Headless) ---
+# Creates the internal DNS name for the database.
+apiVersion: v1
+kind: Service
+metadata:
+  name: open5gs-mongo-svc
+  namespace: open5gs
+spec:
+  ports:
+  - name: mongo
+    port: 27017
+    targetPort: 27017
+    protocol: TCP
+---
+# --- Kubernetes Endpoints ---
+# Manually links the Service name to your external, bare-metal MongoDB IP.
+apiVersion: v1
+kind: Endpoints
+metadata:
+  # The name and namespace MUST match the Service defined above.
+  name: open5gs-mongo-svc
+  namespace: open5gs
+subsets:
+  - addresses:
+      # CRITICAL: Replace this with the actual IP address of your bare-metal
+      # VM where the MongoDB service is running. This IP must be reachable
+      # from your Kubernetes nodes.
+      - ip: "192.168.50.200" # <-- EDIT THIS VALUE
+    ports:
+      # The port must match the port defined in the Service above.
+      - name: mongo
+        port: 27017
+        protocol: TCP
+

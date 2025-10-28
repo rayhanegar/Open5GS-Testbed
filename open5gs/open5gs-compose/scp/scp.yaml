@@ -1,0 +1,21 @@
+logger:
+  file:
+    path: /var/log/open5gs/scp.log
+    timestamp: true
+  default:
+    timestamp: false
+#  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+scp:
+  sbi:
+    server:
+      - address: 10.10.0.200
+        port: 7777
+    client:
+      nrf:
+        - uri: http://10.10.0.10:7777

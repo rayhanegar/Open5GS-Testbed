@@ -1,0 +1,52 @@
+# This manifest defines the Service and Deployment for the Open5GS SCP.
+# - The Service provides the stable DNS name `open5gs-scp-svc`.
+# - The Deployment ensures one replica of the `open5gs-scp` container is running.
+# - It mounts the `open5gs-config` ConfigMap to load its `scp.yaml` file.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: open5gs-scp-svc
+  namespace: open5gs
+  labels:
+    app: open5gs-scp
+spec:
+  ports:
+    - port: 7777
+      targetPort: 7777
+      name: sbi
+  selector:
+    app: open5gs-scp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open5gs-scp-deployment
+  namespace: open5gs
+  labels:
+    app: open5gs-scp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open5gs-scp
+  template:
+    metadata:
+      labels:
+        app: open5gs-scp
+    spec:
+      containers:
+      - name: scp
+        image: gradiantcharts/open5gs-scp
+        ports:
+        - containerPort: 7777
+        command: ["open5gs-scpd"]
+        args: ["-c", "/open5gs/config/scp.yaml"]
+        volumeMounts:
+        - name: open5gs-config-volume
+          mountPath: /open5gs/config
+      volumes:
+      - name: open5gs-config-volume
+        configMap:
+          name: open5gs-config
+

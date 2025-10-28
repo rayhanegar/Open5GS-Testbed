@@ -1,0 +1,18 @@
+db_uri: mongodb://192.168.50.200:27017/open5gs
+logger:
+  file:
+    path: /var/log/open5gs/udr.log
+    timestamp: true
+
+global:
+  max:
+    ue: 1024
+
+udr:
+  sbi:
+    server:
+      - address: 10.10.0.20
+        port: 7777
+    client:
+      scp:
+        - uri: http://10.10.0.200:7777

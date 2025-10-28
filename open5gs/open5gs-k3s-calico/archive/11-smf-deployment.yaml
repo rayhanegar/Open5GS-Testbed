@@ -1,0 +1,59 @@
+# This manifest defines the Service and Deployment for the Open5GS SMF.
+# - The Service provides the stable DNS name `open5gs-smf-svc` and exposes
+#   both the SBI (TCP) and PFCP (UDP) ports.
+# - The Deployment ensures one replica of the `open5gs-smf` container is running.
+# - It mounts the `open5gs-config` ConfigMap to load its `smf.yaml` file.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: open5gs-smf-svc
+  namespace: open5gs
+  labels:
+    app: open5gs-smf
+spec:
+  ports:
+    - port: 7777
+      targetPort: 7777
+      name: sbi
+    - port: 8805
+      targetPort: 8805
+      protocol: UDP
+      name: pfcp
+  selector:
+    app: open5gs-smf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open5gs-smf-deployment
+  namespace: open5gs
+  labels:
+    app: open5gs-smf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open5gs-smf
+  template:
+    metadata:
+      labels:
+        app: open5gs-smf
+    spec:
+      containers:
+      - name: smf
+        image: gradiantcharts/open5gs-smf
+        ports:
+        - containerPort: 7777
+        - containerPort: 8805
+          protocol: UDP
+        command: ["open5gs-smfd"]
+        args: ["-c", "/open5gs/config/smf.yaml"]
+        volumeMounts:
+        - name: open5gs-config-volume
+          mountPath: /open5gs/config
+      volumes:
+      - name: open5gs-config-volume
+        configMap:
+          name: open5gs-config
+

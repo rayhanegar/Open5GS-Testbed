@@ -1,0 +1,312 @@
+# --- What is this file? ---
+# This manifest defines a Kubernetes ConfigMap.
+#
+# --- Why is it needed? ---
+# A ConfigMap is used to store configuration data as key-value pairs,
+# decoupling configuration from the application container images. This allows
+# you to change configurations without rebuilding your containers.
+#
+# This single, centralized ConfigMap holds the `.yaml` configuration for every
+# Open5GS Network Function. Each key (e.g., 'amf.yaml') is the filename, and
+# the value is the content of that file. These will be mounted as files
+# into the respective pods.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open5gs-config
+  namespace: open5gs
+data:
+  
+  # --- AMF Configuration ---
+  # Note how the NRF and SCP addresses are not IPs, but the DNS names
+  # of the Kubernetes Services we will create (e.g., 'open5gs-nrf-svc').
+  # This is how services discover each other in Kubernetes.
+  amf.yaml: |
+    logger:
+      level: debug
+    global:
+      max:
+        ue: 1024
+    amf:
+      sbi:
+        - dev: eth0
+          port: 7777
+      ngap:
+        - dev: eth0
+      metrics:
+        - dev: eth0
+          port: 9090
+      
+      guami:
+        plmn_id:
+          mcc: 001
+          mnc: 01
+        amf_id:
+          region: 2
+          set: 1
+      tai:
+        plmn_id:
+          mcc: 001
+          mnc: 01
+        tac: 1
+      plmn_support:
+        - plmn_id:
+            mcc: 001
+            mnc: 01
+          s_nssai:
+            - sst: 1
+              dnn: embb.testbed
+            - sst: 2
+              dnn: urllc.v2x
+            - sst: 3
+              dnn: mmtc.testbed
+      
+
+      security:
+        integrity_order: [nia2, nia1, nia0]
+        ciphering_order: [nea2, nea1, nea0]
+      network_name:
+        full: DigitalHugs Network
+        short: DigitalHugs <3
+      
+      amf_name: open5gs-amf0
+      locality: area1
+    
+    nrf:
+      sbi:
+        - name: open5gs-nrf-svc # K8s Service Name
+          port: 7777
+    
+    scp:
+      sbi:
+        - name: open5gs-scp-svc # K8s Service Name
+          port: 7777
+
+  # --- SMF Configuration ---
+  smf.yaml: |
+    logger:
+      level: debug
+    global:
+      max:
+        ue: 1024
+    smf:
+      sbi:
+        - dev: eth0
+          port: 7777
+      pfcp:
+        - dev: eth0
+      gtpc:
+        - dev: eth0
+      gtpu:
+        - dev: eth0
+      metrics:
+        - dev: eth0
+          port: 9090
+      session:
+        - subnet: 10.45.0.0/24
+          sst: 1
+          dnn: embb.testbed
+          gateway: 10.45.0.1
+        - subnet: 10.45.1.0/24
+          sst: 2
+          dnn: urllc.v2x
+          gateway: 10.45.1.1
+        - subnet: 10.45.2.0/24
+          sst: 3
+          dnn: mmtc.testbed
+          gateway: 10.45.2.1
+      dns:
+        - 8.8.8.8
+        - 8.8.4.4
+      mtu: 1400
+    
+    nrf:
+      sbi:
+        - name: open5gs-nrf-svc # K8s Service Name
+          port: 7777
+    
+    upf:
+      pfcp:
+        - name: open5gs-upf-svc # K8s Service Name
+          port: 8805
+    
+    scp:
+      sbi:
+        - name: open5gs-scp-svc # K8s Service Name
+          port: 7777
+
+  # --- UPF Configuration ---
+  upf.yaml: |
+    logger:
+        level: info
+    global:
+      max:
+        ue: 1024
+    upf:
+      pfcp:
+        - dev: eth0
+      gtpu:
+        - dev: eth0
+      metrics:
+        - dev: eth0
+          port: 9090
+      session:
+        - subnet: 10.45.0.0/24
+          gateway: 10.45.0.1
+          dnn: embb.testbed
+          dev: ogstun
+        - subnet: 10.45.1.0/24
+          gateway: 10.45.1.1
+          dnn: urllc.v2x
+          dev: ogstun2
+        - subnet: 10.45.2.0/24
+          gateway: 10.45.2.1
+          dnn: mmtc.testbed
+          dev: ogstun3
+    
+  # --- NRF Configuration ---
+  nrf.yaml: |
+    logger:
+      level: info
+    global:
+      max:
+        ue: 1024
+    nrf:
+      sbi:
+        - dev: eth0
+          port: 7777
+      serving:
+        - plmn_id:
+            mcc: 001
+            mnc: 01
+    
+    mongodb:
+        name: open5gs
+        url: mongodb://open5gs-mongo-svc/open5gs # K8s Service Name for Mongo
+
+  # --- AUSF Configuration ---
+  ausf.yaml: |
+    logger:
+        level: info
+    global:
+      max:
+        ue: 1024
+    ausf:
+        sbi:
+          - dev: eth0
+            port: 7777
+    nrf:
+        sbi:
+          - name: open5gs-nrf-svc # K8s Service Name
+            port: 7777
+    scp:
+        sbi:
+          - name: open5gs-scp-svc # K8s Service Name
+            port: 7777
+  
+  # --- NSSF Configuration ---
+  nssf.yaml: |
+    logger:
+        level: info
+    global:
+      max:
+        ue: 1024
+    nssf:
+        sbi:
+          - dev: eth0
+            port: 7777
+    nrf:
+        sbi:
+          - name: open5gs-nrf-svc # K8s Service Name
+            port: 7777
+    scp:
+        sbi:
+          - name: open5gs-scp-svc # K8s Service Name
+            port: 7777
+
+  # --- UDM Configuration ---
+  udm.yaml: |
+    logger:
+        level: info
+    global:
+      max:
+        ue: 1024
+    udm:
+        sbi:
+          - dev: eth0
+            port: 7777
+    nrf:
+        sbi:
+          - name: open5gs-nrf-svc # K8s Service Name
+            port: 7777
+    scp:
+        sbi:
+          - name: open5gs-scp-svc # K8s Service Name
+            port: 7777
+
+  # --- UDR Configuration ---
+  udr.yaml: |
+    logger:
+        level: info
+    global:
+      max:
+        ue: 1024
+    udr:
+        sbi:
+          - dev: eth0
+            port: 7777
+    mongodb:
+        name: open5gs
+        url: mongodb://open5gs-mongo-svc/open5gs # K8s Service Name for Mongo
+    nrf:
+        sbi:
+          - name: open5gs-nrf-svc # K8s Service Name
+            port: 7777
+    scp:
+        sbi:
+          - name: open5gs-scp-svc # K8s Service Name
+            port: 7777
+
+  # --- PCF Configuration ---
+  pcf.yaml: |
+    logger:
+        level: info
+    global:
+      max:
+        ue: 1024
+    pcf:
+        sbi:
+          - dev: eth0
+            port: 7777
+        metrics:
+          - dev: eth0
+            port: 9090
+    mongodb:
+        name: open5gs
+        url: mongodb://open5gs-mongo-svc/open5gs
+    nrf:
+        sbi:
+          - name: open5gs-nrf-svc # K8s Service Name
+            port: 7777
+    scp:
+        sbi:
+          - name: open5gs-scp-svc # K8s Service Name
+            port: 7777
+
+  # --- SCP Configuration ---
+  scp.yaml: |
+    logger:
+        level: info
+    global:
+      max:
+        ue: 1024
+    scp:
+        sbi:
+          - dev: eth0
+            port: 7777
+    nrf:
+        sbi:
+          - name: open5gs-nrf-svc # K8s Service Name
+            port: 7777
+

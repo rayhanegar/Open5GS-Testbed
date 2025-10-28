@@ -1,0 +1,10 @@
+*.log
+*.pid
+*.swp
+.git
+.gitignore
+README.md
+docker-compose.yml
+logs/
+*.tar
+*.tar.gz

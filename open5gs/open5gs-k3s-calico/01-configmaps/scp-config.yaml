@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scp-config
+  namespace: open5gs
+data:
+  scp.yaml: |
+    logger:
+      file:
+        path: /var/log/open5gs/scp.log
+        timestamp: true
+      default:
+        timestamp: true
+    #  level: info   # fatal|error|warn|info(default)|debug|trace
+
+    global:
+      max:
+        ue: 1024  # The number of UE can be increased depending on memory size.
+    #    peer: 64
+
+    scp:
+      info:
+        port:
+          http: 7777
+      sbi:
+        server:
+          - address: 10.10.0.200
+            port: 7777
+        client:
+          nrf:
+            - uri: http://10.10.0.10:7777
+          scp:
+            - uri: http://10.10.0.200:7777 

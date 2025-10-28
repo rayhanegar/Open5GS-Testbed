@@ -1,0 +1,13 @@
+---
+apiVersion: crd.projectcalico.org/v1
+kind: IPPool
+metadata:
+  name: open5gs-pool
+spec:
+  cidr: 10.10.0.0/24
+  ipipMode: Never
+  natOutgoing: true
+  disabled: false
+  nodeSelector: all()
+  blockSize: 26
+

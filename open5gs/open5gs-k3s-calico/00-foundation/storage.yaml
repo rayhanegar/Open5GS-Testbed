@@ -1,0 +1,28 @@
+# Note: K3s local-path provisioner doesn't support ReadWriteMany
+# Using hostPath volumes directly in pod specs instead
+# This file kept for reference but resources are not used
+
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: open5gs-logs-pv
+# spec:
+#   capacity:
+#     storage: 10Gi
+#   accessModes:
+#     - ReadWriteOnce
+#   hostPath:
+#     path: /mnt/data/open5gs-logs
+#   persistentVolumeReclaimPolicy: Retain
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: open5gs-logs-pvc
+#   namespace: open5gs
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 10Gi

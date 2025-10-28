@@ -1,0 +1,68 @@
+# --- What is this file? ---
+# This manifest defines two Kubernetes resources for the Open5GS NRF:
+# 1. A Service: To provide a stable network endpoint for the NRF.
+# 2. A Deployment: To run and manage the NRF container (pod).
+
+# --- Kubernetes Service for NRF ---
+# The Service creates a stable DNS name (`open5gs-nrf-svc.open5gs`) that
+# other NFs can use to communicate with the NRF. It uses the `selector` to find
+# all pods with the label `app: open5gs-nrf` and forwards traffic to them.
+# This decouples the NFs, as they don't need to know the specific IP of the NRF pod.
+apiVersion: v1
+kind: Service
+metadata:
+  name: open5gs-nrf-svc
+  namespace: open5gs
+  labels:
+    app: open5gs-nrf
+spec:
+  ports:
+    - port: 7777
+      targetPort: 7777
+      name: sbi
+  selector:
+    app: open5gs-nrf
+---
+# --- Kubernetes Deployment for NRF ---
+# The Deployment is a blueprint for creating and managing the NRF pods.
+# It ensures that a specified number of `replicas` (in this case, 1) are
+# always running. If a pod crashes, the Deployment Controller will
+# automatically create a new one to replace it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open5gs-nrf-deployment
+  namespace: open5gs
+  labels:
+    app: open5gs-nrf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open5gs-nrf
+  # The 'template' section defines the actual pod that will be created.
+  template:
+    metadata:
+      # Labels are crucial. They are used by the Service's selector to
+      # identify this pod as part of the NRF service.
+      labels:
+        app: open5gs-nrf
+    spec:
+      containers:
+      - name: nrf
+        image: gradiantcharts/open5gs-nrf
+        ports:
+        - containerPort: 7777
+        command: ["open5gs-nrfd"]
+        args: ["-c", "/open5gs/config/nrf.yaml"]
+        # This mounts the centralized ConfigMap into the pod as a directory.
+        volumeMounts:
+        - name: open5gs-config-volume
+          mountPath: /open5gs/config
+      # This defines the volume that is being mounted. It points to our
+      # ConfigMap named 'open5gs-config'.
+      volumes:
+      - name: open5gs-config-volume
+        configMap:
+          name: open5gs-config
+

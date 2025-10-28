@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: upf
+  namespace: open5gs
+spec:
+  selector:
+    app: upf
+  ports:
+  - name: pfcp
+    port: 8805
+    targetPort: 8805
+    protocol: UDP
+  - name: gtpu
+    port: 2152
+    targetPort: 2152
+    protocol: UDP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: upf
+  namespace: open5gs
+spec:
+  serviceName: upf
+  replicas: 1
+  selector:
+    matchLabels:
+      app: upf
+  template:
+    metadata:
+      labels:
+        app: upf
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"10.10.0.7\"]"
+    spec:
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
+      containers:
+      - name: upf
+        image: open5gs-upf:latest
+        imagePullPolicy: Never
+
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN  # Required for GTP-U and iptables
+            - NET_RAW
+            - SYS_ADMIN
+          privileged: true  # Required for TUN device and iptables
+        
+        ports:
+        - name: pfcp
+          containerPort: 8805
+          protocol: UDP
+        - name: gtpu
+          containerPort: 2152
+          protocol: UDP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        
+        env:
+        - name: DB_URI
+          value: "mongodb://mongodb.open5gs.svc.cluster.local:27017/open5gs"
+        
+        volumeMounts:
+        - name: config
+          mountPath: /etc/open5gs/custom
+        - name: logs
+          mountPath: /var/log/open5gs
+          subPath: upf
+        - name: dev-net-tun 
+          mountPath: /dev/net/tun
+        
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "2000m"        
+        startupProbe:
+          exec:
+            command: ["pgrep", "open5gs-upfd"]
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command: ["pgrep", "open5gs-upfd"]
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command: ["pgrep", "open5gs-upfd"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+      volumes:
+      - name: config
+        configMap:
+          name: upf-config
+      - name: logs
+        hostPath:
+          path: /mnt/data/open5gs-logs
+          type: DirectoryOrCreate
+      - name: dev-net-tun
+        hostPath:
+          path: /dev/net/tun
+          type: CharDevice

@@ -1,0 +1,96 @@
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: udm
+  namespace: open5gs
+spec:
+  selector:
+    app: udm
+  ports:
+  - port: 7777
+    targetPort: 7777
+
+# StatefulSet
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: udm
+  namespace: open5gs
+spec:
+  serviceName: udm
+  replicas: 1
+  selector:
+    matchLabels:
+      app: udm
+  template:
+    metadata:
+      labels:
+        app: udm
+        component: control-plane
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"10.10.0.12\"]"
+    spec:
+      initContainers:
+      - name: wait-for-dependency
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z scp.open5gs.svc.cluster.local 7777; do
+            echo "Waiting for scp..."
+            sleep 2
+          done
+      
+      containers:
+      - name: udm
+        image: open5gs-udm:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 7777
+        env:
+        - name: DB_URI
+          value: "mongodb://mongodb.open5gs.svc.cluster.local:27017/open5gs"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/open5gs/custom
+        - name: logs
+          mountPath: /var/log/open5gs
+          subPath: udm
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        startupProbe:
+          exec:
+            command: ["pgrep", "open5gs-udmd"]
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command: ["pgrep", "open5gs-udmd"]
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command: ["pgrep", "open5gs-udmd"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+      
+      volumes:
+      - name: config
+        configMap:
+          name: udm-config
+      - name: logs
+        hostPath:
+          path: /mnt/data/open5gs-logs
+          type: DirectoryOrCreate

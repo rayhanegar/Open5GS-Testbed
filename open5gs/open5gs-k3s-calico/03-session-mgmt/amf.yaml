@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: amf
+  namespace: open5gs
+spec:
+  selector:
+    app: amf
+  externalIPs:
+  - 192.168.50.200
+  ports:
+  - name: sbi
+    port: 7777
+    targetPort: 7777
+    protocol: TCP
+  - name: ngap
+    port: 38412
+    targetPort: 38412
+    protocol: SCTP
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: amf
+  namespace: open5gs
+spec:
+  serviceName: amf
+  replicas: 1
+  selector:
+    matchLabels:
+      app: amf
+  template:
+    metadata:
+      labels:
+        app: amf
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"10.10.0.5\"]"
+    spec:
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
+      initContainers:
+        - name: wait-for-dependency
+          image: busybox:1.35
+          command:
+          - sh
+          - -c
+          - |
+            until nc -z scp.open5gs.svc.cluster.local 7777; do
+              echo "Waiting for scp..."
+              sleep 2
+            done
+      containers:
+      - name: amf
+        image: open5gs-amf:latest
+        imagePullPolicy: Never
+        ports:
+        - name: sbi
+          containerPort: 7777
+          protocol: TCP
+        - name: ngap
+          containerPort: 38412
+          protocol: SCTP
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN  # Required for SCTP
+        volumeMounts:
+        - name: config
+          mountPath: /etc/open5gs/custom
+        - name: logs
+          mountPath: /var/log/open5gs
+          subPath: amf
+        startupProbe:
+          exec:
+            command: ["pgrep", "open5gs-amfd"]
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command: ["pgrep", "open5gs-amfd"]
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command: ["pgrep", "open5gs-amfd"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+      
+      volumes:
+      - name: config
+        configMap:
+          name: amf-config
+      - name: logs
+        hostPath:
+          path: /mnt/data/open5gs-logs
+          type: DirectoryOrCreate

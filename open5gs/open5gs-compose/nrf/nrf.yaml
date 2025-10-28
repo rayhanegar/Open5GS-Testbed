@@ -1,0 +1,18 @@
+logger:
+  file:
+    path: /var/log/open5gs/nrf.log
+    timestamp: true
+
+global:
+  max:
+    ue: 1024
+
+nrf:
+  serving:
+    - plmn_id:
+        mcc: 001
+        mnc: 01
+  sbi:
+    server:
+      - address: 0.0.0.0
+        port: 7777

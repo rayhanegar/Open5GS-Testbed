@@ -1,0 +1,83 @@
+# --- What is this file? ---
+# This is a special manifest for the UPF. It uses a privileged security
+# context and a custom startup command to prepare the networking environment.
+
+# --- Kubernetes Service for UPF ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open5gs-upf-svc
+  namespace: open5gs
+  labels:
+    app: open5gs-upf
+spec:
+  ports:
+    - port: 8805
+      targetPort: 8805
+      protocol: UDP
+      name: pfcp
+  selector:
+    app: open5gs-upf
+---
+# --- Kubernetes Deployment for UPF ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open5gs-upf-deployment
+  namespace: open5gs
+  labels:
+    app: open5gs-upf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open5gs-upf
+  template:
+    metadata:
+      labels:
+        app: open5gs-upf
+    spec:
+      containers:
+      - name: upf
+        image: gradiantcharts/open5gs-upf
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 8805
+          protocol: UDP
+        - containerPort: 2152
+          protocol: UDP
+        # --- UPDATED STARTUP COMMAND ---
+        # This command replicates the essential logic from your custom startup.sh script.
+        # It runs inside the container *before* the main UPF process starts.
+        # 1. It creates the three required TUN interfaces (ogstun, ogstun2, ogstun3).
+        # 2. It brings the interfaces up.
+        # 3. It enables IP forwarding in the container's kernel namespace.
+        # 4. It adds the necessary iptables NAT rules for each slice's subnet.
+        # 5. Finally, it uses 'exec' to start the UPF daemon. 'exec' is important
+        #    as it replaces the shell process, allowing Kubernetes to manage the
+        #    UPF process directly.
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            set -x;
+            ip tuntap add name ogstun mode tun;
+            ip tuntap add name ogstun2 mode tun;
+            ip tuntap add name ogstun3 mode tun;
+            ip link set dev ogstun up;
+            ip link set dev ogstun2 up;
+            ip link set dev ogstun3 up;
+            sysctl -w net.ipv4.ip_forward=1;
+            iptables -t nat -A POSTROUTING -s 10.45.0.0/24 ! -o ogstun -j MASQUERADE;
+            iptables -t nat -A POSTROUTING -s 10.45.1.0/24 ! -o ogstun2 -j MASQUERADE;
+            iptables -t nat -A POSTROUTING -s 10.45.2.0/24 ! -o ogstun3 -j MASQUERADE;
+            exec open5gs-upfd -c /open5gs/config/upf.yaml
+        # --- END OF UPDATED STARTUP COMMAND ---
+        volumeMounts:
+        - name: open5gs-config-volume
+          mountPath: /open5gs/config
+      volumes:
+      - name: open5gs-config-volume
+        configMap:
+          name: open5gs-config
+

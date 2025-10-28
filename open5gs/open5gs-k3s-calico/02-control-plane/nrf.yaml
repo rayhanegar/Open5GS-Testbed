@@ -1,0 +1,84 @@
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nrf
+  namespace: open5gs
+spec:
+  selector:
+    app: nrf
+  ports:
+  - port: 7777
+    targetPort: 7777
+
+# StatefulSet
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nrf
+  namespace: open5gs
+spec:
+  serviceName: nrf
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nrf
+  template:
+    metadata:
+      labels:
+        app: nrf
+        component: control-plane
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"10.10.0.10\"]"
+    spec:
+      containers:
+      - name: nrf
+        image: open5gs-nrf:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 7777
+        env:
+        - name: DB_URI
+          value: "mongodb://mongodb.open5gs.svc.cluster.local:27017/open5gs"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/open5gs/custom
+        - name: logs
+          mountPath: /var/log/open5gs
+          subPath: nrf
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        startupProbe:
+          exec:
+            command: ["pgrep", "open5gs-nrfd"]
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command: ["pgrep", "open5gs-nrfd"]
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command: ["pgrep", "open5gs-nrfd"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+      
+      volumes:
+      - name: config
+        configMap:
+          name: nrf-config
+      - name: logs
+        hostPath:
+          path: /mnt/data/open5gs-logs
+          type: DirectoryOrCreate

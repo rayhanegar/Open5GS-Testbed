@@ -1,0 +1,53 @@
+# This manifest defines the Service and Deployment for the Open5GS AUSF.
+# The structure is identical to the other core NFs.
+# - The Service provides the stable DNS name `open5gs-ausf-svc`.
+# - The Deployment ensures one replica of the `open5gs-ausf` container is running.
+# - It mounts the `open5gs-config` ConfigMap to load its `ausf.yaml` file.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: open5gs-ausf-svc
+  namespace: open5gs
+  labels:
+    app: open5gs-ausf
+spec:
+  ports:
+    - port: 7777
+      targetPort: 7777
+      name: sbi
+  selector:
+    app: open5gs-ausf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open5gs-ausf-deployment
+  namespace: open5gs
+  labels:
+    app: open5gs-ausf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open5gs-ausf
+  template:
+    metadata:
+      labels:
+        app: open5gs-ausf
+    spec:
+      containers:
+      - name: ausf
+        image: gradiantcharts/open5gs-ausf
+        ports:
+        - containerPort: 7777
+        command: ["open5gs-ausfd"]
+        args: ["-c", "/open5gs/config/ausf.yaml"]
+        volumeMounts:
+        - name: open5gs-config-volume
+          mountPath: /open5gs/config
+      volumes:
+      - name: open5gs-config-volume
+        configMap:
+          name: open5gs-config
+

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: udr-config
+  namespace: open5gs
+data:
+  udr.yaml: |
+    db_uri: mongodb://mongodb.open5gs.svc.cluster.local:27017/open5gs
+    logger:
+      file:
+        path: /var/log/open5gs/udr.log
+        timestamp: true
+      default:
+        timestamp: true
+    #  level: info   # fatal|error|warn|info(default)|debug|trace
+
+    global:
+      max:
+        ue: 1024  # The number of UE can be increased depending on memory size.
+    #    peer: 64
+
+    udr:
+      sbi:
+        server:
+          - address: 10.10.0.20
+            port: 7777
+        client:
+          nrf:
+            - uri: http://10.10.0.10:7777
+          scp:
+            - uri: http://10.10.0.200:7777

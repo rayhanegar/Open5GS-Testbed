@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: udm-config
+  namespace: open5gs
+data:
+  udm.yaml: |
+
+    logger:
+      file:
+        path: /var/log/open5gs/udm.log
+        timestamp: true
+      default:
+        timestamp: true
+    #  level: info   # fatal|error|warn|info(default)|debug|trace
+
+    global:
+      max:
+        ue: 1024  # The number of UE can be increased depending on memory size.
+    #    peer: 64
+
+    udm:
+      sbi:
+        server:
+          - address: 10.10.0.12
+            port: 7777
+        client:
+          nrf:
+            - uri: http://10.10.0.10:7777
+          udr:
+            - uri: http://10.10.0.20:7777
+
+      

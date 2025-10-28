@@ -1,0 +1,15 @@
+# --- What is this file? ---
+# This manifest defines a Kubernetes Namespace.
+#
+# --- Why is it needed? ---
+# A Namespace provides a way to create a virtual cluster inside your physical
+# Kubernetes cluster. It's used to scope resources and prevent naming
+# collisions between different projects or teams. All of our Open5GS
+# resources (pods, services, etc.) will be created within this 'open5gs'
+# namespace, keeping them organized and isolated from other applications.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  # The name of our virtual cluster for Open5GS.
+  name: open5gs

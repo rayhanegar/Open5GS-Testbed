@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nrf-config
+  namespace: open5gs
+data:
+  nrf.yaml: |
+    logger:
+      file:
+        path: /var/log/open5gs/nrf.log
+        timestamp: true
+      default:
+        timestamp: true
+    #  level: info   # fatal|error|warn|info(default)|debug|
+
+    global:
+      max:
+        ue: 1024
+
+    nrf:
+      serving:
+        - plmn_id:
+            mcc: 001
+            mnc: 01
+      sbi:
+        server:
+          - address: 10.10.0.10
+            port: 7777
