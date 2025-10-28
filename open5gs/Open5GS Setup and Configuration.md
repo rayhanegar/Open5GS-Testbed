@@ -1,20 +1,34 @@
-# Version Note
-For monolithic\, same\-host gNB and Open5GS implementation\.
-Supporting 3 network slices with UERANSIM integration\:
-1. Enhanced Mobile Broadband\:
-    1. SST\: 1\, SD\:1\, DNN\: embb\.testbed
-    2. IPv4 subnet\: 10\.45\.0\.0\/24
-    3. Tunnel\: ogstun \(10\.45\.0\.1\/24\)
-2. Ultra\-Reliable Low\-Latency Communication \(URLLC\)
-    1. SST\: 2\, SD\: 2\, DNN\: urllc\.v2x
-    2. IPv4 subnet\: 10\.45\.1\.0\/24
-    3. Tunnel\: ogstun2 \(10\.45\.1\.0\/24\)
-3. Massive Machine\-Type Communication \(mMTC\)
-    1. SST\: 3\, SD\: 3\, DNN\: mmtc\.testbed
-    2. IPv4 subnet\: 10\.45\.2\.0\/24
-    3. Tunnel\: ogstun3 \(10\.45\.2\.0\/24\)
+# Open5GS Setup and Configuration Guide
 
-Last modified\: Sep 22\, 2025 
+## Version Note
+
+For monolithic, same-host gNB and Open5GS implementation.
+
+Supporting 3 network slices with UERANSIM integration:
+1. Enhanced Mobile Broadband:
+    1. SST: 1, SD:1, DNN: embb.testbed
+    2. IPv4 subnet: 10.45.0.0/24
+    3. Tunnel: ogstun (10.45.0.1/24)
+2. Ultra-Reliable Low-Latency Communication (URLLC)
+    1. SST: 2, SD: 2, DNN: urllc.v2x
+    2. IPv4 subnet: 10.45.1.0/24
+    3. Tunnel: ogstun2 (10.45.1.0/24)
+3. Massive Machine-Type Communication (mMTC)
+    1. SST: 3, SD: 3, DNN: mmtc.testbed
+    2. IPv4 subnet: 10.45.2.0/24
+    3. Tunnel: ogstun3 (10.45.2.0/24)
+
+**Last modified**: Oct 28, 2025
+
+## Quick Note on Configuration Files
+
+All Network Function configuration files referenced in this guide are available in the **`configs-reference/`** directory of this repository. You can:
+
+- **Copy directly** from `configs-reference/` to `/etc/open5gs/`
+- **Use as templates** and customize for your environment
+- **Verify your configs** against the reference files
+
+See the [YAML Configs](#yaml-configs) section for detailed instructions on using reference configurations. 
 # Reference
 * [https\:\/\/open5gs\.org\/open5gs\/docs\/guide\/01\-quickstart\/](https://open5gs.org/open5gs/docs/guide/01-quickstart/)
 * [https\:\/\/medium\.com\/rahasak\/5g\-core\-network\-setup\-with\-open5gs\-and\-ueransim\-cd0e77025fd7](https://medium.com/rahasak/5g-core-network-setup-with-open5gs-and-ueransim-cd0e77025fd7)
@@ -64,14 +78,78 @@ sudo apt-get install -y nodejs
 curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 ```
 # YAML Configs
-The configuration files for Open5GS can be found inside \/etc\/open5gs directory\. For every modification\, it is recommended to use restart the associated service of that \.yaml file\.
-## amf\.yaml
-```warp-runnable-command
+
+The configuration files for Open5GS can be found inside `/etc/open5gs` directory. For every modification, it is recommended to restart the associated service of that `.yaml` file.
+
+**Reference configurations** for all Network Functions are available in the `configs-reference/` directory of this repository. You can use these as templates for your deployment.
+
+## Available Reference Configurations
+
+The following configuration files are available in `configs-reference/`:
+
+- `amf.yaml` - Access and Mobility Management Function
+- `ausf.yaml` - Authentication Server Function
+- `bsf.yaml` - Binding Support Function
+- `hss.yaml` - Home Subscriber Server (4G/EPC)
+- `mme.yaml` - Mobility Management Entity (4G/EPC)
+- `nrf.yaml` - Network Repository Function
+- `nssf.yaml` - Network Slice Selection Function
+- `pcf.yaml` - Policy Control Function
+- `pcrf.yaml` - Policy and Charging Rules Function (4G/EPC)
+- `scp.yaml` - Service Communication Proxy
+- `sgwc.yaml` - Serving Gateway Control Plane (4G/EPC)
+- `sgwu.yaml` - Serving Gateway User Plane (4G/EPC)
+- `smf.yaml` - Session Management Function
+- `smf-icn.yaml` - SMF configuration for ICN network
+- `udm.yaml` - Unified Data Management
+- `udr.yaml` - Unified Data Repository
+- `upf.yaml` - User Plane Function
+
+## Configuration Workflow
+
+For each Network Function configuration:
+
+1. **Backup the original configuration file**
+2. **Copy the reference configuration** from `configs-reference/` or edit directly
+3. **Customize** the configuration for your environment (if needed)
+4. **Restart the service** to apply changes
+
+### Quick Copy All Configurations
+
+To copy all reference configurations at once:
+
+```bash
+# Ensure you're in the repository directory
+cd /path/to/repo/open5gs
+
+# Copy all configs to /etc/open5gs (with backups)
+for config in configs-reference/*.yaml; do
+    filename=$(basename "$config")
+    sudo cp "/etc/open5gs/$filename" "/etc/open5gs/${filename}.backup" 2>/dev/null || true
+    sudo cp "$config" "/etc/open5gs/$filename"
+done
+```
+
+## Individual Network Function Configurations
+
+## amf.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./amf.yaml ./amf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/amf.yaml /etc/open5gs/amf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./amf.yaml
 ```
-Replace the content of the amf\.yaml file with this one\.
+
+Replace the content with the configuration from `configs-reference/amf.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -383,13 +461,24 @@ amf:
 #  relative_capacity: 100
 
 ```
-## ausf\.yaml
-```warp-runnable-command
+## ausf.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./ausf.yaml ./ausf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/ausf.yaml /etc/open5gs/ausf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./ausf.yaml
 ```
-In the opened ausf\.yaml\, replace the old content with this one\.
+
+Replace the content with the configuration from `configs-reference/ausf.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -415,13 +504,24 @@ ausf:
       scp:
         - uri: http://127.0.0.200:7777
 ```
-## bsf\.yaml
-```warp-runnable-command
+## bsf.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./bsf.yaml ./bsf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/bsf.yaml /etc/open5gs/bsf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./bsf.yaml
 ```
-In the opened editor\, replace the old content of \.\/bsf\.yaml with this one\.
+
+Replace the content with the configuration from `configs-reference/bsf.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -447,13 +547,24 @@ bsf:
       scp:
         - uri: http://127.0.0.200:7777
 ```
-## hss\.yaml
-```warp-runnable-command
+## hss.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./hss.yaml ./hss.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/hss.yaml /etc/open5gs/hss.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./hss.yaml
 ```
-And then replace the content of hss\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/hss.yaml`, or use the following:
 ```yaml
 db_uri: mongodb://localhost/open5gs
 logger:
@@ -478,13 +589,24 @@ hss:
 #  sms_over_ims: "sip:smsc.mnc001.mcc001.3gppnetwork.org:7060;transport=tcp"
 #  use_mongodb_change_stream: true
 ```
-## mme\.yaml
-```warp-runnable-command
+## mme.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./mme.yaml ./mme.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/mme.yaml /etc/open5gs/mme.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./mme.yaml
 ```
-Replace the content of mme\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/mme.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -798,13 +920,24 @@ mme:
 #  o Relative Capacity
 #  relative_capacity: 100
 ```
-## nrf\.yaml
-```warp-runnable-command
+## nrf.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./nrf.yaml ./nrf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/nrf.yaml /etc/open5gs/nrf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./nrf.yaml
 ```
-Unchanged\, only modify logger
+
+Replace the content with the configuration from `configs-reference/nrf.yaml`. Note: This configuration only modifies the logger section from default:
 ```yaml
 logger:
   file:
@@ -912,13 +1045,24 @@ nrf:
 #      - address: nrf.localdomain
 
 ```
-## nssf\.yaml
-```warp-runnable-command
+## nssf.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./nssf.yaml ./nssf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/nssf.yaml /etc/open5gs/nssf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./nssf.yaml
 ```
-And then replace the content of nssf\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/nssf.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -1126,13 +1270,24 @@ nssf:
 #          s_nssai:
 #            sst: 1
 ```
-## pcf\.yaml
-```warp-runnable-command
+## pcf.yaml
+
+```bash
 cd /etc/open5gs
-sudo cp ./pcf.yaml ./pfc.yaml.backup
+sudo cp ./pcf.yaml ./pcf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/pcf.yaml /etc/open5gs/pcf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./pcf.yaml
 ```
-And then replace the content of the pfc\.yaml with the following\. 
+
+Replace the content with the configuration from `configs-reference/pcf.yaml`, or use the following: 
 ```yaml
 db_uri: mongodb://localhost/open5gs
 logger:
@@ -1163,13 +1318,24 @@ pcf:
       - address: 127.0.0.13
         port: 9090
 ```
-## pcrf\.yaml
-```warp-runnable-command
+## pcrf.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./pcrf.yaml ./pcrf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/pcrf.yaml /etc/open5gs/pcrf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./pcrf.yaml
 ```
-And then replace the content of pcrf\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/pcrf.yaml`, or use the following:
 ```yaml
 db_uri: mongodb://localhost/open5gs
 logger:
@@ -1191,13 +1357,24 @@ pcrf:
       - address: 127.0.0.9
         port: 9090
 ```
-## scp\.yaml
-```warp-runnable-command
+## scp.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./scp.yaml ./scp.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/scp.yaml /etc/open5gs/scp.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./scp.yaml
 ```
-And then replace the content of scp\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/scp.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -1221,13 +1398,24 @@ scp:
       nrf:
         - uri: http://127.0.0.10:7777
 ```
-## sgwc\.yaml
-```warp-runnable-command
+## sgwc.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./sgwc.yaml ./sgwc.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/sgwc.yaml /etc/open5gs/sgwc.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./sgwc.yaml
 ```
-And then replace the content of sgwc\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/sgwc.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -1253,13 +1441,24 @@ sgwc:
       sgwu:
         - address: 127.0.0.6
 ```
-## sgwu\.yaml
-```warp-runnable-command
+## sgwu.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./sgwu.yaml ./sgwu.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/sgwu.yaml /etc/open5gs/sgwu.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./sgwu.yaml
 ```
-And then replace the content of sgwu\.yaml with the following
+
+Replace the content with the configuration from `configs-reference/sgwu.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -1285,13 +1484,24 @@ sgwu:
     server:
       - address: 127.0.0.6
 ```
-## smf\.yaml
-```warp-runnable-command
+## smf.yaml
+
+```bash
 cd /etc/open5gs
-sudo cp ./smf.yaml.backup
+sudo cp ./smf.yaml ./smf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/smf.yaml /etc/open5gs/smf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./smf.yaml
 ```
-And then replace the content of smf\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/smf.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -1381,13 +1591,24 @@ smf:
             mnc: 01
           tac: 1
 ```
-## udm\.yaml
-```warp-runnable-command
+## udm.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./udm.yaml ./udm.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/udm.yaml /etc/open5gs/udm.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./udm.yaml
 ```
-And then replace the content of udm\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/udm.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -1432,13 +1653,24 @@ udm:
       scp:
         - uri: http://127.0.0.200:7777
 ```
-## udr\.yaml
-```warp-runnable-command
+## udr.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./udr.yaml ./udr.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/udr.yaml /etc/open5gs/udr.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./udr.yaml
 ```
-And then replace the content of udr\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/udr.yaml`, or use the following:
 ```yaml
 db_uri: mongodb://localhost/open5gs
 logger:
@@ -1466,13 +1698,24 @@ udr:
         - uri: http://127.0.0.200:7777
 
 ```
-## upf\.yaml
-```warp-runnable-command
+## upf.yaml
+
+```bash
 cd /etc/open5gs
 sudo cp ./upf.yaml ./upf.yaml.backup
+```
+
+**Option 1: Copy from reference**
+```bash
+sudo cp /path/to/repo/open5gs/configs-reference/upf.yaml /etc/open5gs/upf.yaml
+```
+
+**Option 2: Edit manually**
+```bash
 sudo nano ./upf.yaml
 ```
-And then replace the content of upf\.yaml with the following\.
+
+Replace the content with the configuration from `configs-reference/upf.yaml`, or use the following:
 ```yaml
 logger:
   file:
@@ -2331,5 +2574,94 @@ if [ $failed_count -gt 0 ]; then
 else
     print_success "All available Open5GS services restarted successfully!"
     print_status "You can check service status with: sudo systemctl status open5gs-*"
-fis
+fi
 ```
+
+# Applying Configuration Changes
+
+After modifying any Network Function configuration files, you must restart the corresponding service for changes to take effect.
+
+## Restart Individual Service
+
+To restart a specific Network Function service:
+
+```bash
+# Restart a single service
+sudo systemctl restart open5gs-<service>d
+
+# Examples:
+sudo systemctl restart open5gs-amfd    # AMF
+sudo systemctl restart open5gs-smfd    # SMF
+sudo systemctl restart open5gs-upfd    # UPF
+sudo systemctl restart open5gs-nrfd    # NRF
+
+# Check status of restarted service
+sudo systemctl status open5gs-amfd
+```
+
+## Restart All Services
+
+To restart all Open5GS services at once (recommended after multiple configuration changes):
+
+```bash
+# Using the utility script
+cd /path/to/repo/open5gs/scripts
+sudo chmod +x open5gs-restart-services.sh
+sudo ./open5gs-restart-services.sh
+```
+
+The restart script:
+- Restarts services in proper dependency order
+- Checks service health after restart
+- Provides a summary of success/failures
+- Automatically skips services that aren't installed
+
+## Service Dependencies
+
+Open5GS services have dependencies and should be restarted in this order:
+
+1. **NRF** (Network Repository Function) - Service discovery foundation
+2. **SCP** (Service Communication Proxy) - SBI routing
+3. **AUSF, UDR, UDM** - Authentication and data management
+4. **PCF, BSF, NSSF** - Policy and support functions
+5. **AMF, UPF, SMF** - Core network functions
+6. **SGWC, SGWU, MME, HSS, PCRF** - 4G/EPC functions (if used)
+
+## Verify Configuration Changes
+
+After restarting services, verify they're running correctly:
+
+```bash
+# Check all Open5GS services status
+sudo systemctl status open5gs-*
+
+# View real-time logs for a specific service
+sudo journalctl -f -u open5gs-amfd
+
+# Check if services are active
+sudo systemctl is-active open5gs-amfd open5gs-smfd open5gs-upfd
+```
+
+## Common Issues After Configuration Changes
+
+1. **Service fails to start**: Check configuration syntax
+   ```bash
+   sudo journalctl -u open5gs-amfd -n 50
+   ```
+
+2. **Port conflicts**: Ensure ports in config match across services
+   ```bash
+   sudo netstat -tulpn | grep 7777
+   ```
+
+3. **MongoDB connection**: Verify MongoDB is running
+   ```bash
+   sudo systemctl status mongod
+   ```
+
+4. **Missing dependencies**: Ensure dependent services are running first
+   ```bash
+   # Start NRF first, then other services
+   sudo systemctl restart open5gs-nrfd
+   sudo systemctl restart open5gs-amfd
+   ```
