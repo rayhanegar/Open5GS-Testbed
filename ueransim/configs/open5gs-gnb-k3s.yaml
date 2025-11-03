@@ -16,7 +16,7 @@ amfConfigs:
   # - address: 127.0.0.5
   #   port: 38412
   # Containerized Open5GS deployment
-  - address: 10.10.0.5
+  - address: 10.34.4.130
     port: 38412
 
 # List of supported S-NSSAIs by this gNB

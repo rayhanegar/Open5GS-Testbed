@@ -4,7 +4,7 @@ set -e  # Exit on error
 
 # Get the script directory and navigate to open5gs-containers
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTAINERS_DIR="${SCRIPT_DIR}/../open5gs-containers"
+CONTAINERS_DIR="${SCRIPT_DIR}/../open5gs-compose"
 
 # Parse command line flags
 FORCE_REBUILD=false
