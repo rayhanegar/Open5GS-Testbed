@@ -332,7 +332,9 @@ Open a terminal and navigate to UERANSIM directory:
 cd /home/rayhan/Open5GS-Testbed/ueransim
 
 # Run gNB with configuration
-./build/nr-gnb -c configs/open5gs-gnb-local.yaml
+./build/nr-gnb -c configs/open5gs-gnb-native.yaml
+#or
+./build/nr-gnb -c configs/open5gs-gnb-k3s.yaml
 ```
 
 **Expected Success Output**:
@@ -500,16 +502,16 @@ The `nr-binder` utility ensures all traffic from a command goes through the UE i
 
 ```bash
 # Ping using nr-binder
-./build/nr-binder 10.45.0.2 ping -c 4 8.8.8.8
+./build/nr-binder uesimtun0 ping -c 4 8.8.8.8
 
 # Traceroute to see path
-./build/nr-binder 10.45.0.2 traceroute 8.8.8.8
+./build/nr-binder uesimtun0 traceroute 8.8.8.8
 
 # Run iperf3 client for throughput test
-./build/nr-binder 10.45.0.2 iperf3 -c <iperf-server-ip> -t 10
+./build/nr-binder uesimtun0 iperf3 -c <iperf-server-ip> -t 10
 
 # Run wget download test
-./build/nr-binder 10.45.0.2 wget http://speedtest.tele2.net/100MB.zip
+./build/nr-binder uesimtun0 wget http://speedtest.tele2.net/100MB.zip
 ```
 
 **Why use nr-binder?**: Some applications ignore the `-I` flag. `nr-binder` forces them to use the UE's network namespace.
@@ -527,13 +529,13 @@ iperf3 -s
 **Run iperf3 client from UE**:
 ```bash
 # TCP throughput test (10 seconds)
-./build/nr-binder 10.45.0.2 iperf3 -c <server-ip> -t 10
+./build/nr-binder uesimtun0 iperf3 -c <server-ip> -t 10
 
 # UDP throughput test with 100 Mbps target
-./build/nr-binder 10.45.0.2 iperf3 -c <server-ip> -u -b 100M -t 10
+./build/nr-binder uesimtun0 iperf3 -c <server-ip> -u -b 100M -t 10
 
 # Reverse mode (server sends to client)
-./build/nr-binder 10.45.0.2 iperf3 -c <server-ip> -R -t 10
+./build/nr-binder uesimtun0 iperf3 -c <server-ip> -R -t 10
 ```
 
 **Expected Results**:
