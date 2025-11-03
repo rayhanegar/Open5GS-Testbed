@@ -293,7 +293,7 @@ Use the appropriate IP from above in your gNB configuration:
 ```yaml
 # In gnb.conf or enb.conf
 amf_addr = 10.147.18.25  # Your tunnel/interface IP
-bind_addr = 10.34.4.245  # Your gNB's IP
+bind_addr =   # Your gNB's IP
 
 # N2 (NGAP) parameters
 n2_bind_addr = 10.34.4.245

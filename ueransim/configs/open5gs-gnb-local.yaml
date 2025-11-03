@@ -8,7 +8,7 @@ tac: 1              # Tracking Area Code
 linkIp: 127.0.0.1   # gNB's local IP address for Radio Link Simulation (Usually same with local IP)
 ngapIp: 127.0.0.1   # gNB's local IP address for N2 Interface (Usually same with local IP)
 gtpIp: 127.0.0.1    # gNB's local IP address for N3 Interface (Usually same with local IP)
-gtpAdvertiseIp: 192.168.50.200  # gNB's advertised IP address for N3 Interface (Must be reachable from UPF)
+gtpAdvertiseIp: 10.34.4.245  # gNB's advertised IP address for N3 Interface (Must be reachable from UPF)
 
 # List of AMF address information
 amfConfigs:

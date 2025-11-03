@@ -17,6 +17,6 @@ metadata:
   namespace: open5gs
 subsets:
 - addresses:
-  - ip: 192.168.50.200  # CHANGE THIS to your MongoDB IP
+  - ip: 10.34.4.245  # CHANGE THIS to your MongoDB IP
   ports:
   - port: 27017

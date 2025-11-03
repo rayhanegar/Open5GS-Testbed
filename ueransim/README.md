@@ -147,7 +147,7 @@ quit
 | `linkIp` | gNB's local IP for radio simulation | `127.0.0.1` (local), `10.34.4.245` (remote) |
 | `ngapIp` | gNB's IP for N2 (NGAP) to AMF | `127.0.0.1` (local), `10.34.4.245` (remote) |
 | `gtpIp` | gNB's IP for N3 (GTP-U) to UPF | `127.0.0.1` (local), `10.34.4.245` (remote) |
-| `gtpAdvertiseIp` | Public IP advertised to UPF | `192.168.50.200` (if behind NAT) |
+| `gtpAdvertiseIp` | Public IP advertised to UPF | `10.34.4.245` (if behind NAT) |
 | `amfConfigs[].address` | AMF IP address | `127.0.0.5` (native), `10.10.0.5` (docker), `10.147.18.25` (VPN) |
 | `amfConfigs[].port` | AMF NGAP port | `38412` |
 | `slices[]` | Supported network slices | SST 1 (eMBB), SST 2 (URLLC), SST 3 (mMTC) |
@@ -177,7 +177,7 @@ amfConfigs:
 linkIp: 10.34.4.245      # gNB machine's IP
 ngapIp: 10.34.4.245      # gNB machine's IP
 gtpIp: 10.34.4.245       # gNB machine's IP
-gtpAdvertiseIp: 192.168.50.200  # If gNB behind NAT
+gtpAdvertiseIp: 10.34.4.245  # If gNB behind NAT
 
 amfConfigs:
   # Open5GS host IP (EduVPN/Tailscale/Direct)

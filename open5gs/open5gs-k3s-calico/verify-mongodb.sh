@@ -4,7 +4,7 @@
 echo "=== MongoDB Connectivity Test ==="
 echo ""
 
-MONGO_IP="192.168.50.200"
+MONGO_IP="10.34.4.245"
 MONGO_PORT="27017"
 MONGO_DB="open5gs"
 
