@@ -40,17 +40,17 @@ iptables -t nat -A POSTROUTING -s 10.10.0.0/24 ! -d 10.10.0.0/24 -j MASQUERADE
 iptables -t nat -A POSTROUTING -s 10.45.0.0/16 -j MASQUERADE
 ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 -j MASQUERADE
 
-# Port forwarding for external gNB access via EduVPN tunnel
-# Get EduVPN tunnel IP from tun0 interface
-EDUVPN_IP=$(ip -4 addr show tun0 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n1)
+# Port forwarding for external gNB access 
+# Get IP from enp3s0 interface
+INTERNAL_UB_IP=$(ip -4 addr show enp3s0 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n1)
 
-if [ -z "$EDUVPN_IP" ]; then
-    echo "Warning: EduVPN interface (tun0) not found or no IP assigned"
+if [ -z "$INTERNAL_UB_IP" ]; then
+    echo "Warning: EduVPN interface (enp3s0) not found or no IP assigned"
     echo "Please ensure EduVPN is running and authenticated"
     exit 1
 fi
 
-echo "Detected EduVPN IP: $EDUVPN_IP"
+echo "Detected EduVPN IP: $INTERNAL_UB_IP"
 
 # Forward SCTP port for AMF (NGAP)
 iptables -t nat -A PREROUTING -p sctp --dport 38412 -j DNAT --to-destination 10.10.0.5:38412
@@ -105,8 +105,8 @@ echo "Important notes:"
 echo "1. AMF NGAP is accessible on port 38412 (SCTP)"
 echo "2. UPF GTP-U is accessible on ports 2152-2153 (UDP)"
 echo "3. SBI interfaces are accessible on ports 77xx (TCP)"
-echo "4. Your gNB should connect to $EDUVPN_IP:38412 for N2 interface"
-echo "5. Your gNB should connect to $EDUVPN_IP:2152 for N3 interface"
+echo "4. Your gNB should connect to $INTERNAL_UB_IP:38412 for N2 interface"
+echo "5. Your gNB should connect to $INTERNAL_UB_IP:2152 for N3 interface"
 echo ""
 echo "To start the Open5GS containers:"
 echo "  docker-compose up -d"
