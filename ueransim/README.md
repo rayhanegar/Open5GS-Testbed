@@ -144,10 +144,10 @@ quit
 | `mnc` | Mobile Network Code | `'01'` |
 | `nci` | NR Cell Identity (36-bit hex) | `'0x000000010'` |
 | `tac` | Tracking Area Code | `1` |
-| `linkIp` | gNB's local IP for radio simulation | `127.0.0.1` (local), `10.34.4.245` (remote) |
-| `ngapIp` | gNB's IP for N2 (NGAP) to AMF | `127.0.0.1` (local), `10.34.4.245` (remote) |
-| `gtpIp` | gNB's IP for N3 (GTP-U) to UPF | `127.0.0.1` (local), `10.34.4.245` (remote) |
-| `gtpAdvertiseIp` | Public IP advertised to UPF | `10.34.4.245` (if behind NAT) |
+| `linkIp` | gNB's local IP for radio simulation | `127.0.0.1` (local), `10.34.4.130` (remote) |
+| `ngapIp` | gNB's IP for N2 (NGAP) to AMF | `127.0.0.1` (local), `10.34.4.130` (remote) |
+| `gtpIp` | gNB's IP for N3 (GTP-U) to UPF | `127.0.0.1` (local), `10.34.4.130` (remote) |
+| `gtpAdvertiseIp` | Public IP advertised to UPF | `10.34.4.130` (if behind NAT) |
 | `amfConfigs[].address` | AMF IP address | `127.0.0.5` (native), `10.10.0.5` (docker), `10.147.18.25` (VPN) |
 | `amfConfigs[].port` | AMF NGAP port | `38412` |
 | `slices[]` | Supported network slices | SST 1 (eMBB), SST 2 (URLLC), SST 3 (mMTC) |
@@ -174,10 +174,10 @@ amfConfigs:
 ##### **Scenario 2: Remote gNB (Different Machine)**
 
 ```yaml
-linkIp: 10.34.4.245      # gNB machine's IP
-ngapIp: 10.34.4.245      # gNB machine's IP
-gtpIp: 10.34.4.245       # gNB machine's IP
-gtpAdvertiseIp: 10.34.4.245  # If gNB behind NAT
+linkIp: 10.34.4.130      # gNB machine's IP
+ngapIp: 10.34.4.130      # gNB machine's IP
+gtpIp: 10.34.4.130       # gNB machine's IP
+gtpAdvertiseIp: 10.34.4.130  # If gNB behind NAT
 
 amfConfigs:
   # Open5GS host IP (EduVPN/Tailscale/Direct)
@@ -188,9 +188,9 @@ amfConfigs:
 ##### **Scenario 3: Kubernetes (K3s) Deployment**
 
 ```yaml
-linkIp: 10.34.4.245      # gNB machine's IP
-ngapIp: 10.34.4.245      # gNB machine's IP
-gtpIp: 10.34.4.245       # gNB machine's IP
+linkIp: 10.34.4.130      # gNB machine's IP
+ngapIp: 10.34.4.130      # gNB machine's IP
+gtpIp: 10.34.4.130       # gNB machine's IP
 
 amfConfigs:
   - address: 10.10.0.5   # AMF static IP in K3s
@@ -225,7 +225,7 @@ slices:
 | `key` | Permanent subscription key (K) | Must match WebUI/MongoDB |
 | `op` | Operator code (OPc) | Must match WebUI/MongoDB |
 | `opType` | OP type | `'OPC'` or `'OP'` |
-| `gnbSearchList[]` | List of gNB IPs to connect to | `127.0.0.1`, `10.34.4.245` |
+| `gnbSearchList[]` | List of gNB IPs to connect to | `127.0.0.1`, `10.34.4.130` |
 | `sessions[]` | PDU sessions to establish | Multiple allowed |
 | `sessions[].apn` | Data Network Name (DNN) | `embb.testbed`, `urllc.v2x`, `mmtc.testbed` |
 | `sessions[].slice.sst` | Slice type | `1` (eMBB), `2` (URLLC), `3` (mMTC) |
@@ -254,7 +254,7 @@ amf: '8000'
 
 ```yaml
 gnbSearchList:
-  - 10.34.4.245    # Remote gNB IP
+  - 10.34.4.130    # Remote gNB IP
   # - 127.0.0.1    # Local fallback
 ```
 
