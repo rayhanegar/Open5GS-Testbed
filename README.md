@@ -4,7 +4,9 @@ A comprehensive 5G Core Network testbed integrating **Open5GS** and **UERANSIM**
 
 This testbed network is used for 5G core network demonstration for 2025 CIF65217 Wireless Network course @ FILKOM UB.
 
-Inquiry: rayhanegar.sn@gmail.com
+A paper about this project is available on Bahasa Indonesia thru this link: https://j-ptiik.ub.ac.id/index.php/j-ptiik/article/view/16025
+
+For more information: rayhanegar.sn@gmail.com
 
 ## 📋 Overview
 
