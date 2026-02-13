@@ -2,6 +2,10 @@
 
 A comprehensive 5G Core Network testbed integrating **Open5GS** and **UERANSIM** for research, testing, and educational purposes. This testbed supports multiple network slices and provides flexible deployment options to suit different testing scenarios.
 
+This testbed network is used for 5G core network demonstration for 2025 CIF65217 Wireless Network course @ FILKOM UB.
+
+Inquiry: rayhanegar.sn@gmail.com
+
 ## 📋 Overview
 
 This repository provides a complete 5G standalone (SA) network testing environment with:
@@ -51,6 +55,129 @@ This repository provides a complete 5G standalone (SA) network testing environme
                       Internet
 ```
 
+> **Important**: The architecture diagram shows the IP addresses used in the current configuration (e.g., 10.34.4.130, 10.10.0.0/24). **You must adjust these IP addresses** to match your specific environment before deployment.
+
+## 💾 MongoDB and WebUI Setup
+
+### Overview
+
+**MongoDB** and **Open5GS WebUI** operate **outside the K3s/Docker cluster** as external services running on the host machine or a separate VM. The containerized Open5GS network functions connect to these external services for subscriber data management.
+
+### Why External?
+
+- **MongoDB**: Serves as the persistent subscriber database, accessible by both the WebUI and core network functions (UDM, UDR, etc.)
+- **Open5GS WebUI**: Provides a web-based interface for managing subscribers, requiring direct MongoDB access
+- **Isolation**: Keeping data services external simplifies backup, migration, and allows the core network to scale independently
+
+### MongoDB Installation
+
+```bash
+# Install MongoDB on Ubuntu
+sudo apt update
+sudo apt install -y mongodb-org
+
+# Start MongoDB service
+sudo systemctl start mongod
+sudo systemctl enable mongod
+
+# Verify MongoDB is running
+sudo systemctl status mongod
+
+# Check MongoDB is listening on port 27017
+sudo netstat -tulpn | grep 27017
+```
+
+### MongoDB Configuration for Remote Access
+
+By default, MongoDB only listens on localhost. To allow K3s/Docker containers to connect:
+
+```bash
+# Edit MongoDB configuration
+sudo nano /etc/mongod.conf
+
+# Update the bindIp to allow connections from your network
+# Change:
+#   bindIp: 127.0.0.1
+# To:
+#   bindIp: 0.0.0.0  # Or specify your host IP (e.g., 10.34.4.130)
+
+# Restart MongoDB
+sudo systemctl restart mongod
+```
+
+### Open5GS WebUI Installation
+
+```bash
+# Install Node.js (required for WebUI)
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Clone and install Open5GS WebUI
+git clone https://github.com/open5gs/open5gs.git
+cd open5gs/webui
+npm clean-install
+
+# Configure MongoDB connection (if needed)
+# Edit: open5gs/webui/server/index.js
+# Update MongoDB URI to: mongodb://localhost:27017
+
+# Start WebUI
+npm run dev
+# Or for production: npm run start
+
+# Access WebUI at: http://<your-host-ip>:9999
+# Default credentials: admin / 1423
+```
+
+### IP Address Configuration
+
+**Critical**: Before deploying Open5GS, update the MongoDB connection strings in the network function configurations:
+
+#### For Docker Compose Deployment
+Edit the following files in [`open5gs/open5gs-compose/`](open5gs/open5gs-compose/):
+- `amf/amf.yaml` - Update NRF address
+- `smf/smf.yaml` - Update NRF and UPF addresses
+- `nrf/nrf.yaml` - Update MongoDB URI: `mongodb://<your-host-ip>:27017`
+- `udm/udm.yaml` - Update MongoDB URI
+- `udr/udr.yaml` - Update MongoDB URI
+- All NF configs - Update `sbi.advertise` addresses to match your network
+
+**Example MongoDB URI update**:
+```yaml
+db_uri: mongodb://10.34.4.130:27017/open5gs  # Change to your host IP
+```
+
+#### For K3s Deployment
+Edit ConfigMaps in [`open5gs/open5gs-k3s-calico/01-configmaps/`](open5gs/open5gs-k3s-calico/01-configmaps/):
+- `nrf-configmap.yaml`
+- `udm-configmap.yaml`
+- `udr-configmap.yaml`
+- All relevant ConfigMaps with `db_uri` fields
+
+### Verifying MongoDB Connectivity
+
+```bash
+# From host machine
+mongo --host <your-host-ip> --port 27017
+
+# From inside a container/pod (test connectivity)
+ping <your-host-ip>
+curl http://<your-host-ip>:27017
+# MongoDB should respond with: "It looks like you are trying to access MongoDB over HTTP..."
+
+# Check Open5GS database exists
+mongo --host <your-host-ip> --eval "show dbs"
+```
+
+### Current Configuration IP Addresses
+
+The configurations in this repository use the following IP addresses as **examples**:
+- **Host/MongoDB/WebUI**: `10.34.4.130`
+- **Control Plane Network**: `10.10.0.0/24`
+- **User Plane Networks**: `10.45.0.0/24`, `10.45.1.0/24`, `10.45.2.0/24`
+
+**You must replace these with your actual network addresses before deployment.**
+
 ## 🎯 Key Features
 
 ### Open5GS Component
@@ -66,7 +193,6 @@ This repository provides a complete 5G standalone (SA) network testing environme
   - **PCF** (Policy Control Function)
   - **NSSF** (Network Slice Selection Function)
   - **SCP** (Service Communication Proxy)
-  - **BSF** (Binding Support Function)
 
 - **Three Network Slices**:
   | Slice | SST | DNN | Subnet | Use Case |
@@ -138,9 +264,13 @@ Open5GS-Testbed/
 
 - Ubuntu 20.04/22.04 or similar Linux distribution
 - Root/sudo access
+- **MongoDB installed and running** (on host machine or accessible VM)
+- **Open5GS WebUI** (optional but recommended for subscriber management)
 - For Docker Compose: Docker and Docker Compose installed
 - For K3s: K3s cluster with Calico CNI
 - For UERANSIM: SCTP kernel module
+
+> **Note**: MongoDB and WebUI must be set up **before** deploying Open5GS. See the [MongoDB and WebUI Setup](#-mongodb-and-webui-setup) section for installation instructions.
 
 ### Option 1: Native Deployment
 
@@ -288,10 +418,12 @@ wireshark n2-interface.pcap
 
 ### Managing Subscribers
 
+> **Reminder**: MongoDB and WebUI run **outside** the K3s/Docker cluster. Ensure these services are installed and running on your host machine. See [MongoDB and WebUI Setup](#-mongodb-and-webui-setup) for details.
+
 #### Via WebUI (All Deployments)
 ```bash
-# Access Open5GS WebUI
-# URL: http://localhost:9999
+# Access Open5GS WebUI (replace with your host IP)
+# URL: http://<your-host-ip>:9999 (e.g., http://10.34.4.130:9999)
 # Login: admin / 1423
 
 # Add subscriber:
@@ -303,8 +435,10 @@ wireshark n2-interface.pcap
 
 #### Via MongoDB CLI
 ```bash
-# Connect to MongoDB
-mongo
+# Connect to MongoDB (replace with your host IP if remote)
+mongo --host <your-host-ip> --port 27017
+# Or if MongoDB is on localhost:
+# mongo
 
 # Switch to open5gs database
 use open5gs
@@ -377,8 +511,9 @@ kubectl rollout restart -n open5gs deployment/upf
 |-------|----------|---------------|
 | AMF not starting | Check PLMN configuration, verify SCTP module | Native guide |
 | UPF TUN creation failed | Verify NET_ADMIN capability, check sysctl | Compose guide |
-| MongoDB connection issues | Check MongoDB service status, verify port 27017 | All guides |
+| MongoDB connection issues | **Check MongoDB is running on host**, verify port 27017 is open, ensure `db_uri` uses correct host IP, test connectivity from containers | [MongoDB Setup](#-mongodb-and-webui-setup) |
 | NF registration failures | Check NRF connectivity, verify SBI addresses | K3s guide |
+| WebUI cannot connect | WebUI runs on **host machine** - check Node.js is running, verify MongoDB connection, check firewall rules for port 9999 | [MongoDB Setup](#-mongodb-and-webui-setup) |
 
 ### UERANSIM Issues
 
@@ -393,11 +528,20 @@ kubectl rollout restart -n open5gs deployment/upf
 
 ## 🌐 Network Configuration
 
+> **⚠️ Important**: The IP addresses listed below are examples from the current configuration. **You MUST adjust these addresses** to match your specific network environment before deployment. Update all configuration files accordingly.
+
 ### PLMN Configuration
 - **MCC**: 001 (Test network)
 - **MNC**: 01
 
 ### IP Addressing
+
+#### External Services (Host/VM - Outside Cluster)
+- **MongoDB**: Port 27017 on host IP (example: `10.34.4.130`)
+- **Open5GS WebUI**: Port 9999 on host IP (example: `10.34.4.130`)
+- **Host Machine**: Primary network interface IP (example: `10.34.4.130`)
+
+> These services run on the host machine or a dedicated VM and are accessed by containerized network functions.
 
 #### Control Plane (Native)
 - AMF: 127.0.0.5
@@ -406,7 +550,7 @@ kubectl rollout restart -n open5gs deployment/upf
 - Other NFs: 127.0.0.x
 
 #### Control Plane (Docker/K3s)
-- Network: 10.10.0.0/24
+- **Network**: 10.10.0.0/24 *(example - adjust to your network)*
 - AMF: 10.10.0.5
 - SMF: 10.10.0.4
 - UPF: 10.10.0.7
@@ -416,6 +560,18 @@ kubectl rollout restart -n open5gs deployment/upf
 - eMBB subnet: 10.45.0.0/24 (ogstun)
 - URLLC subnet: 10.45.1.0/24 (ogstun2)
 - mMTC subnet: 10.45.2.0/24 (ogstun3)
+
+### Configuration Files Requiring IP Updates
+
+When adapting this testbed to your environment, update IP addresses in:
+
+1. **MongoDB Connection Strings**: All `db_uri` parameters in NRF, UDM, UDR configs
+2. **SBI Addresses**: Service-based interface `advertise` addresses in all NF configs
+3. **NGAP/GTPU Addresses**: AMF NGAP address, UPF GTPU address
+4. **Setup Scripts**: Network setup scripts in `open5gs-compose/setup-host-network-*.sh`
+5. **UERANSIM Configs**: gNB and UE configuration files with AMF/UPF addresses
+
+Refer to individual deployment guides for detailed configuration instructions.
 
 ## 🎓 Educational Use
 
@@ -528,4 +684,4 @@ For issues and questions:
 
 **Status**: ✅ Active Development | 🧪 Testbed Environment | 📚 Educational Use
 
-Last Updated: October 28, 2025
+Last Updated: February 13, 2026
